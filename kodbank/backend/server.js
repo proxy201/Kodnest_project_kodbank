@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const pool = require('./db');
@@ -23,8 +24,11 @@ const balanceRoutes = require('./routes/balance');
 app.use('/api/auth', authRoutes);
 app.use('/api/bank', balanceRoutes);
 
-if (process.env.NODE_ENV === 'production') {
-  const frontendBuildPath = path.join(__dirname, '..', 'frontend', 'build');
+const frontendBuildPath = path.join(__dirname, '..', 'frontend', 'build');
+const frontendIndexPath = path.join(frontendBuildPath, 'index.html');
+const hasFrontendBuild = fs.existsSync(frontendIndexPath);
+
+if (hasFrontendBuild) {
   app.use(express.static(frontendBuildPath));
 
   app.get('*', (req, res, next) => {
@@ -32,8 +36,10 @@ if (process.env.NODE_ENV === 'production') {
       return next();
     }
 
-    return res.sendFile(path.join(frontendBuildPath, 'index.html'));
+    return res.sendFile(frontendIndexPath);
   });
+} else {
+  console.warn('⚠️  Frontend build not found. Did you run `npm run build`?');
 }
 
 // Health check endpoint
