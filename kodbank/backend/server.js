@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const pool = require('./db');
@@ -11,7 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN,
+  origin: process.env.CORS_ORIGIN || true,
   credentials: true
 }));
 
@@ -21,6 +22,19 @@ const balanceRoutes = require('./routes/balance');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/bank', balanceRoutes);
+
+if (process.env.NODE_ENV === 'production') {
+  const frontendBuildPath = path.join(__dirname, '..', 'frontend', 'build');
+  app.use(express.static(frontendBuildPath));
+
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+
+    return res.sendFile(path.join(frontendBuildPath, 'index.html'));
+  });
+}
 
 // Health check endpoint
 app.get('/health', (req, res) => {
