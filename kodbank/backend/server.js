@@ -20,9 +20,11 @@ app.use(cors({
 // Routes
 const authRoutes = require('./routes/auth');
 const balanceRoutes = require('./routes/balance');
+const chatbotRoutes = require('./routes/chatbot');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/bank', balanceRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 const frontendBuildPath = path.join(__dirname, '..', 'frontend', 'build');
 const frontendIndexPath = path.join(frontendBuildPath, 'index.html');
